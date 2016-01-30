@@ -1,0 +1,10 @@
+[Unit]
+Description=OpenVPN docker container
+After=docker.service fail2ban.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/fkalter/ovpn/start_ovpn
+
+[Install]
+WantedBy=multi-user.target

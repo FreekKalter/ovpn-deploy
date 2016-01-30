@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# The localtime volume makes sure the clock of the host and the container are in sync.
+# This is needed for fail2ban (which runs on the host), and parses the times found
+# in the logs of the container.
+# Specifying the host port without a ip to listen on (ie: 127.0.0.1:1194:1194) will set
+# a iptables rule which opens up the container to the whole world. That is what we want in this case.
+# If we don't, we can specify to only listen on it its localhost address, like so 127.0.0.1:1194:1194
+docker run --volumes-from ovpn-data -v /etc/localtime:/etc/localtime:ro -v /home/fkalter/ovpn/log/:/log -d -p 1194:1194/udp --cap-add=NET_ADMIN c913719bd2a0
+
+# Wait until fail2ban is fully operational and has added the f2b-openvpn chain.
+until iptables -L f2b-openvpn > /dev/null 2>&1
+do
+    sleep 1
+done
+# open_vpn
+# Open_vpn is run in a docker container. A packet destined for a container
+# comes in through iptables FORWARD chain.
+# So this is where docker adds some rules to route these packets to the container.
+# For fail2ban to intercept attackt we have to insert a rule before dockers rules.
+# This makes sure everything coming in through the FORWARD chains first gets checked
+# by fail2ban.
+iptables --wait --insert FORWARD --jump f2b-openvpn

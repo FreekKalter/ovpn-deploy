@@ -1,0 +1,8 @@
+It uses a slightly modified docker-openvpn container from kylemanna.
+It writes logs to a docker volume wich you can mount at a local dir.
+So now I (and fail2ban) can easily inspect the log files.
+
+The start_ovpn script does 2 things: Firts it adds a rule to iptables to
+make sure fail2ban can intercept packets from blocked ips.
+Second it starts the container with the openvpn server.
+
