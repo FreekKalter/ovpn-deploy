@@ -28,7 +28,7 @@ create_client() {
 
 # backup data volume
 backup() {
-    docker run --rm -v $OVPN_DATA:/etc/openvpn -v $(pwd):/backup ubuntu tar cvf /backup/backup.tar /etc/openvpn
+    docker run --rm -v $OVPN_DATA:/etc/openvpn -v $(pwd):/backup ubuntu tar cvf /backup/ovpn-data-backup.tar /etc/openvpn
 }
 
 usage() {
@@ -36,7 +36,7 @@ usage() {
     echo " -b                       build freekkalter/ovpn, updating all packages needed"
     echo " -c                       Create the $OVPN_DATA volume, initialize with server configs, keys and certificates"
     echo " -C       CLIENTNAME      Create client certificate and key and write to a CLIENTNAME.ovpn file for usage by client app"
-    echo " -B                       Backup $OVPN_DATA volume to a tar file"
+    echo " -B                       Backup $OVPN_DATA volume to ovpn-data-backup.tar"
     echo " -a       CLIENTNAME      Do all of the above, takes clientname as argument like -C"
 }
 
