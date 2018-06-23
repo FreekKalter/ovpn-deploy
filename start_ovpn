@@ -6,10 +6,18 @@
 # Specifying the host port without a ip to listen on (ie: 127.0.0.1:1194:1194) will set
 # a iptables rule which opens up the container to the whole world. That is what we want in this case.
 # If we don't, we can specify to only listen on it its localhost address, like so 127.0.0.1:1194:1194
-docker run --volumes-from ovpn-data -v /etc/localtime:/etc/localtime:ro -v /home/fkalter/ovpn/log/:/log -d -p 1194:1194/udp --cap-add=NET_ADMIN c913719bd2a0
+cd /home/fkalter/docker-openvpn/
+docker build --pull --tag freekkalter/ovpn .
+docker stop ovpn-server
+docker rm ovpn-server
+docker run -v ovpn-data:/etc/openvpn\
+           -v /etc/localtime:/etc/localtime:ro\
+           -v /home/fkalter/ovpn/log/:/log\
+           -d -p 1194:1194/udp\
+           --cap-add=NET_ADMIN --name ovpn-server freekkalter/ovpn
 
 # Wait until fail2ban is fully operational and has added the f2b-openvpn chain.
-until iptables -L f2b-openvpn > /dev/null 2>&1
+until sudo iptables -L f2b-openvpn > /dev/null 2>&1
 do
     sleep 1
 done
@@ -20,4 +28,6 @@ done
 # For fail2ban to intercept attackt we have to insert a rule before dockers rules.
 # This makes sure everything coming in through the FORWARD chains first gets checked
 # by fail2ban.
-iptables --wait --insert FORWARD --jump f2b-openvpn
+if ! sudo iptables --check FORWARD --jump f2b-openvpn; then
+    sudo iptables --wait --insert FORWARD --jump f2b-openvpn
+fi
